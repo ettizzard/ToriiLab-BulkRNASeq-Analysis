@@ -64,7 +64,7 @@ $ cat SRR6300226_pass_2.fastq.gz SRR6300227_pass_2.fastq.gz > Estradiol_S3_R2.fa
 
 ## Quality Control
 
-FastQC is a requirement of both pipelines, so it was applied to the ```fastq``` files prior to any alignment steps of either workflow. The [FastQC results]() were quite positive, with all 12 files exhibiting high-quality average Phred scores >28 and no flagged low-quality sequences. Although many samples exhibit high levels of duplication, the distribution of duplication appears to be within an acceptable range and does not indicate immeidate issues with methodology. Further analysis can thus proceed.
+FastQC is a requirement of both pipelines, so it was applied to the ```fastq``` files prior to any alignment steps of either workflow. The [FastQC results](https://github.com/ettizzard/ToriiLab-BulkRNASeq-Analysis/tree/main/fastqc) were quite positive, with all 12 files exhibiting high-quality average Phred scores >28 and no flagged low-quality sequences. Although many samples exhibit high levels of duplication, the distribution of duplication appears to be within an acceptable range and does not indicate immeidate issues with methodology. Further analysis can thus proceed.
 ```
 fastqc *.fastq.gz
 ```
@@ -74,32 +74,72 @@ fastqc *.fastq.gz
 Prior to the alignment steps of either pipeline, an *A. thaliana* reference genome ```fasta``` and gene annotation ```gtf``` file were accessed and downloaded from the [NCBI RefSeq assembly submitted by TAIR](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001735.4/).
 
 
-#### Alignment to Reference Genome with STAR
 
-##### Genome Index Generation:
+## Pipeline 1: STAR and DESeq2
+
+
+### Reference Genome Index Generation:
+
+After installing STAR and acquiring both the reference genome assembly ```fasta``` file and the gene annotation ```gtf```, reference genome indexing can begin.
+
 ```
 $ STAR \
---runThreadN 8 \
+--runThreadN 14 \
 --runMode genomeGenerate \
---genomeDir /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_indices/ \
---genomeFastaFiles /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_files/RefSeq/GCF_000001735.4_TAIR10.1_genomic.fasta \
---sjdbGTFfile /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_files/RefSeq/genomic.gtf \
+--genomeDir /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_indices/ \
+--genomeFastaFiles /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_files/RefSeq/GCF_000001735.4_TAIR10.1_genomic.fasta \
+--sjdbGTFfile /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_files/RefSeq/genomic.gtf \
 --genomeSAindexNbases 12
 ```
 
-##### Mapping and Filtering:
+After the reference genome was successfully indexed, the ```fastq``` files can be mapped to the reference.
+
+### Mapping and Filtering:
 
 ```
 $ STAR \
---runThreadN 8 \
+--runThreadN 14 \
 --runMode alignReads \
---genomeDir /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_indices/ \
---readFilesIn /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/SRX3401147_DMSO_S1_R1.fastq /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/SRX3401147_DMSO_S1_R2.fastq \
---outFileNamePrefix /Users/evan/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/
+--genomeDir /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_indices/ \
+--readFilesCommand zcat \
+--quantMode GeneCounts \
+--outSAMtype BAM SortedByCoordinate \
+--readFilesIn /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/DMSO_S1_R1.fastq.gz /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/DMSO_S1_R2.fastq.gz \
+--outFileNamePrefix /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/
+...
+$ STAR \
+--runThreadN 14 \
+--runMode alignReads \
+--genomeDir /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_indices/ \
+--readFilesCommand zcat \
+--quantMode GeneCounts \
+--outSAMtype BAM SortedByCoordinate \
+--readFilesIn /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/Estradiol_S3_R1.fastq.gz /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/fastqs/Estradiol_S3_R2.fastq.gz \
+--outFileNamePrefix /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/
+```
+After examining the output of STAR, namely ```ReadsPerGene.out.tab```, we see successful mapping of reads to genes.
+
+```
+$ head ReadsPerGene.out.tab 
+N_unmapped      1812843 1812843 1812843
+N_multimapping  1159457 1159457 1159457
+N_noFeature     134421  44907870        294181
+N_ambiguous     1669996 34627   106157
+AT1G01010       457     0       458
+AT1G01020       762     1       761
+AT1G03987       9       9       0
+AT1G01030       372     1       372
+AT1G01040       2260    71      2575
+AT1G03993       0       307     1
+```
+Here, Column 1 responds to the Ensembl Gene ID, whereas Columns 2, 3, and 4 represent the number of reads mapped per gene. After consulting the [original paper](https://www.sciencedirect.com/science/article/pii/S1534580718302855?via%3Dihub) this data was generated for, it was determined that the mRNA libraries were prepared by using Illumina TruSeq Stranded mRNA. Since our reads are stranded, we are concerned with read counts within columns 3 and 4, with Col3 representing the first strand aligned and Col4 representing the second read strand aligned. However, since both columns 3 and 4 contain read counts, we must determine which column contains the majority of mapped reads.
+
+```
+$ tail -n +5 /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/DMSO_S1_output/ReadsPerGene.out.tab | cut -f 3 -d $'\t' | awk '{ sum += $1 } END { print sum }'
+1692801
+
+$ tail -n +5 /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/DMSO_S1_output/ReadsPerGene.out.tab | cut -f 4 -d $'\t' | awk '{ sum += $1 } END { print sum }'
+46234960
 ```
 
-
-
-## Pipeline 1
-
-
+On average, column 4 has 27-28x the number of reads that column 3 does. Thus, column 4 contains the vast majority of our properly aligned reads and will be used for further downstream analysis.

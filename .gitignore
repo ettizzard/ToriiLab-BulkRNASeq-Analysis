@@ -11,3 +11,4 @@ fastqs/
 star/
 SRA_cache/
 fastqc-old/
+alignment_output_backup/
