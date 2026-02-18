@@ -1,0 +1,11 @@
+*.fastq
+*.gz
+*.zip
+.DS_Store
+*.sam
+*.Rmd
+*.out
+*.csv
+backup-fastqc/
+fastqs/
+star/
