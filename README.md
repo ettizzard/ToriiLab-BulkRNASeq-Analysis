@@ -132,7 +132,7 @@ AT1G01030       372     1       372
 AT1G01040       2260    71      2575
 AT1G03993       0       307     1
 ```
-Here, Column 1 responds to the Ensembl Gene ID, whereas Columns 2, 3, and 4 represent the number of reads mapped per gene. After consulting the [original paper](https://www.sciencedirect.com/science/article/pii/S1534580718302855?via%3Dihub) this data was generated for, it was determined that the mRNA libraries were prepared by using Illumina TruSeq Stranded mRNA. Since our reads are stranded, we are concerned with read counts within columns 3 and 4, with Col3 representing the first strand aligned and Col4 representing the second read strand aligned. However, since both columns 3 and 4 contain read counts, we must determine which column contains the majority of mapped reads.
+Here, Column 1 responds to the TAIR Gene ID, whereas Columns 2, 3, and 4 represent the number of reads mapped per gene. After consulting the [original paper](https://www.sciencedirect.com/science/article/pii/S1534580718302855?via%3Dihub) this data was generated for, it was determined that the mRNA libraries were prepared by using Illumina TruSeq Stranded mRNA. Since our reads are stranded, we are concerned with read counts within columns 3 and 4, with Col3 representing the first strand aligned and Col4 representing the second read strand aligned. However, since both columns 3 and 4 contain read counts, we must determine which column contains the majority of mapped reads.
 
 ```
 $ tail -n +5 /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/DMSO_S1_output/ReadsPerGene.out.tab | cut -f 3 -d $'\t' | awk '{ sum += $1 } END { print sum }'
@@ -143,3 +143,8 @@ $ tail -n +5 /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/al
 ```
 
 On average, column 4 has 27-28x the number of reads that column 3 does. Thus, column 4 contains the vast majority of our properly aligned reads and will be used for further downstream analysis.
+
+Lastly, a python script ```combineSTARoutput.py``` was used to compile all of the read counts from Column 4 of each sample per TAIR gene ID. The counts were written to a ```csv``` file to be used for Differential Gene Expression Analysis.
+
+### DESeq2 DGE Analysis
+
