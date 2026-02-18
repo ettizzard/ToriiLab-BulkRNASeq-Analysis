@@ -9,3 +9,5 @@
 backup-fastqc/
 fastqs/
 star/
+SRA_cache/
+fastqc-old/
