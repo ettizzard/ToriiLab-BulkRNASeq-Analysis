@@ -148,3 +148,8 @@ Lastly, a python script ```combineSTARoutput.py``` was used to compile all of th
 
 ### DESeq2 DGE Analysis
 
+Completed in R Markdown
+
+
+## Pipeline 2: STAR and Cufflinks
+Since the reference genome index has already been created, we just need to re-run STAR on the 
