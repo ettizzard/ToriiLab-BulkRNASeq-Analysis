@@ -153,3 +153,13 @@ Completed in R Markdown
 
 ## Pipeline 2: STAR and Cufflinks
 Since the reference genome index has already been created, we just need to re-run STAR on the 
+
+
+```
+$ cufflinks \
+--num-threads 16 \
+--library-type fr-firststrand \
+--output-dir /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/cufflinks/DMSO_S1_output/ \
+–-GTF /projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/genome_files/RefSeq/genomic.gtf
+/projects/bgmp/tizzard/bioinfo/ToriiLab-BulkRNASeq-Analysis/star/alignment_output/DMSO_S1_output/Aligned.sortedByCoord.out.bam
+```
