@@ -148,7 +148,7 @@ Lastly, a python script ```combineSTARoutput.py``` was used to compile all of th
 
 ### DESeq2 DGE Analysis
 
-Completed in an R Markdown
+Completed in an [R Markdown](https://ettizzard.github.io/ToriiLab-BulkRNASeq-Analysis/DESeq2-Analysis.html)
 
 
 ## Pipeline 2: STAR and Cufflinks
