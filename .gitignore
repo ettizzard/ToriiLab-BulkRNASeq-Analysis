@@ -14,3 +14,4 @@ fastqc-old/
 alignment_output_backup/
 *.gff
 cufflinks/
+cuffdiff/
