@@ -253,3 +253,13 @@ $ cuffdiff \
 ### CummeRbund DGE Analysis
 
 Completed in an [R Markdown](https://ettizzard.github.io/ToriiLab-BulkRNASeq-Analysis/CummeRbund-Analysis.html)
+
+## Conclusions
+Both pipelines seem to be relatively congruent in the general groups of genes found to be differentially expressed due to induced MUTE overexpression.
+
+Both DESeq2 and CummeRbund found that AT4G31805 was a highly upregulated gene, corroborating the known fact that AT4G31805's transcript levels change as the result of induced MUTE expression [as per TAIR.](https://www.arabidopsis.org/locus?key=500231852) More generally, both pipelines found genes that were implicated in cell type differentiation and development such as TMM (DESeq2) and CPL3 (CummeRbund).
+
+
+Conversely, DESeq2 and CummeRbund were slightly less in agreeance on discrete downregulated genes. However, both workflows indicate a general trend of downregulated genes implicated in plant response mechanisms against predators. DESeq2 detected EXPA1 and CYP79F1 downregulation, the former being involved in the formation of root structures induced by nematodes, and the latter being involved in plant responce to insect attack. CummeRbund found significant downregulation of both PDF1.2 and PDF 1.2b genes, both of which encode for plant defensin proteins.
+
+Overall, both pipelines seem to be robust to use for a dataset of this nature. The difference in results can likely be attributed to the difference in models used to calculate differential expression. DESeq2 fits the raw read counts to a negative binomial generalized linear model and then applies Bayesian shrinkage, whereas Cufflinks/Cuffdiff utilizes normalized read abundances as FPMK (Fragments Per Kilobase of transcript per Million mapped reads). In my opinion, DESeq2 may be a better option in general due to its more frequent maintenance and abundance of vignettes and options available for visualizations. The Tuxedo/Cufflinks software pipeline seems ideal if only it is used to process the data from start to finish, and CummeRbund as an R package has less features and documentation than DESeq2.
